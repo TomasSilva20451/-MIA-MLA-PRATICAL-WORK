@@ -1,0 +1,11 @@
+Title
+
+Intelligent Financial Risk Classification for Small Businesses Using Machine Learning
+
+Objective 
+
+Develop and evaluate a machine learning classification model that identifies financial risk levels of small businesses using historical financial and economic indicators to support early and informed decision making
+
+Github
+
+https://github.com/TomasSilva20451/-MIA-MLA-PRATICAL-WORK
