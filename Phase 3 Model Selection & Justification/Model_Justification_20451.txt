@@ -1,0 +1,26 @@
+3. Model Selection
+
+(a) Baseline Model
+The baseline model used in this work is Logistic Regression.
+This model was selected because it is simple, easy to interpret, and commonly used as a reference model in classification problems, especially in financial risk assessment. 
+Logistic Regression provides probability outputs and allows an initial understanding of how well the problem can be solved using a linear and interpretable approach.
+
+
+(b) Models Considered
+In addition to the baseline model, the following machine learning models were considered and evaluated:
+	•	Decision Tree, due to its interpretability and ability to model non linear relationships
+	•	Random Forest, as an ensemble method that reduces overfitting and improves predictive performance
+	•	Support Vector Machine (SVM), capable of handling complex decision boundaries
+	•	Naive Bayes, a simple probabilistic classifier used for comparison
+	•	K Nearest Neighbors (KNN), an instance based method suitable for standardized numerical features
+	•	Gradient Boosting, an ensemble technique known for strong performance on structured data
+
+Neural Networks were not considered at this stage because they require more data and tuning and offer lower interpretability, which is less suitable for an academic financial risk context.
+
+
+(c) Model Choice Justification
+After comparing the models using cross validation on the training data, Random Forest was selected as the final model.
+This choice was justified by its strong performance on tabular financial data, robustness to noise and outliers, and its ability to capture non linear relationships between financial indicators. 
+Additionally, Random Forest provides feature importance measures, which improve model interpretability and support decision making in a financial risk assessment context.
+
+Overall, Random Forest offered the best balance between predictive performance, robustness, and interpretability, making it the most appropriate model for this problem.
