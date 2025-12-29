@@ -98,7 +98,7 @@ All preprocessing steps such as imputation and scaling were fitted only on the t
 - ✅ **Phase 1:** Project Definition and Planning
 - ✅ **Phase 2:** Understanding & Preparation of Data 
 - ✅ **Phase 3:** Model Selection and Training
-- ⏳ **Phase 4:** Model Evaluation and Validation (Current)
+- ✅ **Phase 4:** Implementation and Experimentation (Current)
 - ⏳ **Phase 5:** Model Deployment and Monitoring (Upcoming)
 
 ## Installation
@@ -140,6 +140,21 @@ The notebook will guide you through:
 5. Split into train/test sets (70/30, stratified)
 6. Save all outputs to appropriate directories
 
+### Run Phase 4 Model Training
+
+**Jupyter Notebook (Interactive)**
+```bash
+jupyter notebook Phase4_Implementation_Experimentation/Phase4_Model_Training.ipynb
+```
+
+The notebook will guide you through:
+1. Load preprocessed training and test data
+2. Define models and hyperparameter grids
+3. Train all models with GridSearchCV
+4. Evaluate models on test set
+5. Compare models and select best model
+6. Save results and visualizations
+
 ## Project Structure
 
 ```
@@ -154,9 +169,14 @@ The notebook will guide you through:
 │   ├── raw/                       # Raw dataset files
 │   ├── processed/                 # Cleaned dataset
 │   └── splits/                    # Train/test splits
-├── artifacts/                     # Preprocessing artifacts (scaler, feature list)
+├── artifacts/                     # Preprocessing artifacts and model outputs
+│   ├── models/                    # Trained models
+│   ├── results/                   # Evaluation results
+│   └── visualizations/            # Comparison visualizations
 ├── reports/                       # Academic reports
-├── Phase2_Data_Preparation.ipynb  # Interactive Jupyter notebook
+├── Phase2_Data_Preparation.ipynb  # Phase 2 data preparation notebook
+├── Phase4_Implementation_Experimentation/
+│   └── Phase4_Model_Training.ipynb # Phase 4 model training notebook
 ├── requirements.txt               # Python dependencies
 └── README.md                      # This file
 ```
@@ -233,6 +253,130 @@ This choice was justified by its strong performance on tabular financial data, r
 
 Overall, Random Forest offered the best balance between predictive performance, robustness, and interpretability, making it the most appropriate model for this problem.
 
+## Phase 4: Training the Model
+
+### (a) What algorithm was used for training?
+
+Seven machine learning algorithms were trained and compared:
+
+1. **Logistic Regression** - Used as the baseline model due to its simplicity and interpretability
+2. **Decision Tree** - A tree-based model that captures non-linear relationships
+3. **Random Forest** - An ensemble method combining multiple decision trees
+4. **Support Vector Machine (SVM)** - A kernel-based method for complex decision boundaries
+5. **Naive Bayes** - A probabilistic classifier based on Bayes' theorem
+6. **K-Nearest Neighbors (KNN)** - An instance-based learning method
+7. **Gradient Boosting** - An ensemble technique that builds models sequentially
+
+All models were implemented using scikit-learn and trained on the same preprocessed dataset.
+
+### (b) What hyper-parameters were tuned and how?
+
+Hyperparameter tuning was performed using **GridSearchCV** with **RepeatedStratifiedKFold** cross-validation (5 folds, 3 repeats). For each model, a simple grid of 2-3 key hyperparameters was searched:
+
+- **Logistic Regression**: C values [0.1, 1, 10], penalty ['l2'], solver ['lbfgs', 'sag']
+- **Decision Tree**: max_depth [3, 5, 10, None], min_samples_split [2, 5, 10]
+- **Random Forest**: n_estimators [50, 100, 200], max_depth [5, 10, None]
+- **SVM**: C [0.1, 1, 10], kernel ['rbf', 'linear']
+- **Naive Bayes**: var_smoothing [1e-9, 1e-8, 1e-7]
+- **KNN**: n_neighbors [3, 5, 7, 9], weights ['uniform', 'distance']
+- **Gradient Boosting**: n_estimators [50, 100], learning_rate [0.01, 0.1], max_depth [3, 5]
+
+The best hyperparameters were selected based on cross-validation accuracy scores. This approach ensures that hyperparameter selection is based on model performance across multiple validation folds, reducing overfitting.
+
+### (c) What training strategy was implemented?
+
+The training strategy followed a simple and standard approach:
+
+1. **Cross-validation on training set**: RepeatedStratifiedKFold (5 folds, 3 repeats) was used to evaluate model performance during hyperparameter tuning. This ensures that class proportions are maintained in each fold, which is important given the class imbalance in the dataset.
+
+2. **No separate validation set**: Instead of creating a separate validation set, cross-validation was applied directly on the training data. This maximizes the use of available training data while still providing robust performance estimates.
+
+3. **No early stopping**: Early stopping was not used, as the models are relatively simple and training time is manageable. All models were trained to completion.
+
+4. **Final evaluation on test set**: After hyperparameter tuning, the best model for each algorithm was evaluated on the held-out test set (30% of the data) to obtain final performance estimates.
+
+This strategy is appropriate for an academic project and ensures reproducibility while maintaining a clear separation between training and testing data.
+
+### (d) Were techniques used to handle overfitting?
+
+Yes, several techniques were used to prevent overfitting:
+
+1. **Regularization**: Logistic Regression uses L2 regularization (controlled by the C parameter) with multiclass-compatible solvers (lbfgs, sag). SVM uses L2 regularization to penalize large coefficients and reduce model complexity.
+
+2. **Tree depth limits**: Decision Tree, Random Forest, and Gradient Boosting models use max_depth parameters to limit tree growth and prevent overfitting to training data.
+
+3. **Cross-validation for hyperparameter selection**: By using cross-validation to select hyperparameters, the models are less likely to overfit to the training data, as performance is evaluated across multiple folds.
+
+4. **Ensemble methods**: Random Forest and Gradient Boosting are ensemble methods that naturally reduce overfitting by combining multiple models.
+
+5. **Minimum samples for splitting**: Decision Tree uses min_samples_split to prevent splitting on nodes with too few samples, reducing overfitting.
+
+These techniques ensure that the models generalize well to unseen data while maintaining good performance on the training set.
+
+## Phase 5: Model Evaluation
+
+### (a) What metrics were used to evaluate the model?
+
+Comprehensive evaluation metrics were computed for all models:
+
+1. **Accuracy** - Overall proportion of correct predictions
+2. **Precision** - Per class and macro-averaged (proportion of positive predictions that are correct)
+3. **Recall** - Per class and macro-averaged (proportion of actual positives that are correctly identified)
+4. **F1-Score** - Per class and macro-averaged (harmonic mean of precision and recall)
+5. **Confusion Matrix** - Detailed breakdown of predictions vs. actual labels for each class
+
+These metrics provide a complete picture of model performance, especially important for multi-class classification with class imbalance. Macro-averaged metrics give equal weight to each class, which is appropriate when all classes are equally important.
+
+### (b) How did the model perform on the validation/test set?
+
+All models were evaluated on the test set (1,755 samples, 30% of the data). The evaluation results show the following performance ranking:
+
+1. **Gradient Boosting** - 99.60% accuracy (Precision: 99.56%, Recall: 99.57%, F1: 99.57%)
+2. **Random Forest** - 99.37% accuracy (Precision: 99.34%, Recall: 99.39%, F1: 99.36%)
+3. **Decision Tree** - 98.80% accuracy (Precision: 98.89%, Recall: 98.62%, F1: 98.75%)
+4. **Support Vector Machine (SVM)** - 89.63% accuracy (Precision: 88.83%, Recall: 88.24%, F1: 88.49%)
+5. **Logistic Regression** - 89.06% accuracy (Precision: 88.95%, Recall: 87.76%, F1: 88.33%)
+6. **Naive Bayes** - 82.17% accuracy (Precision: 80.36%, Recall: 82.60%, F1: 81.14%)
+7. **K-Nearest Neighbors (KNN)** - 78.97% accuracy (Precision: 77.85%, Recall: 71.32%, F1: 73.68%)
+
+**Key Findings:**
+- **Gradient Boosting** achieved the highest accuracy, demonstrating excellent performance for this financial risk classification problem
+- **Random Forest** (selected in Phase 3) performed very close to Gradient Boosting (99.37% vs 99.60%), confirming it as an excellent choice with better interpretability
+- All tree-based ensemble methods (Gradient Boosting, Random Forest, Decision Tree) significantly outperformed linear models, indicating strong non-linear relationships in the data
+- All models achieved reasonable performance (>78% accuracy), validating the quality of the financial features
+- The confusion matrices revealed which classes were most frequently confused, with most errors occurring between Medium and High risk categories
+
+Detailed results are saved in `artifacts/results/model_comparison.csv` and `artifacts/results/model_evaluation_results.json`. Visualizations comparing all models are available in `artifacts/visualizations/`.
+
+### (c) Was cross-validation used?
+
+Yes, **RepeatedStratifiedKFold** cross-validation was used extensively:
+
+1. **During hyperparameter tuning**: GridSearchCV used RepeatedStratifiedKFold (5 folds, 3 repeats) to evaluate each hyperparameter combination. This provides 15 different train/validation splits for robust performance estimation.
+
+2. **For model selection**: Cross-validation scores were used to compare models and select the best hyperparameters for each algorithm.
+
+3. **Stratification**: The stratified approach ensures that each fold maintains the same class distribution as the original dataset, which is crucial given the class imbalance (Low: 55.8%, Medium: 23.2%, High: 21.0%).
+
+Cross-validation provides a more reliable estimate of model performance than a single train/validation split, especially important when working with limited data.
+
+### (d) Were different models compared?
+
+Yes, all seven models were trained, evaluated, and compared:
+
+1. **Baseline comparison**: Logistic Regression served as a baseline to establish a reference performance level.
+
+2. **Comprehensive comparison**: All models were evaluated on the same test set using the same metrics, allowing for direct comparison.
+
+3. **Visual comparison**: Multiple visualizations were created:
+   - Accuracy comparison bar chart
+   - Precision/Recall/F1-score comparison
+   - Confusion matrices for all models
+
+4. **Best model selection**: Based on the comprehensive evaluation, **Gradient Boosting** achieved the highest accuracy (99.60%) and balanced performance across all metrics. However, **Random Forest** (selected in Phase 3) performed very close (99.37%) and remains an excellent choice due to its better interpretability, robustness, and feature importance measures, which are valuable in financial risk assessment contexts.
+
+The comparison results are documented in the comparison table and saved to `artifacts/results/model_comparison.csv`. This systematic comparison ensures that the model selection is well-justified and reproducible.
+
 ## Configuration
 
 Key settings can be modified in `src/config.py`:
@@ -243,7 +387,8 @@ Key settings can be modified in `src/config.py`:
 ## Documentation
 
 - **Academic Report:** `reports/academic_report.md` - Phase 2 methodology summary
-- **Jupyter Notebook:** `Phase2_Data_Preparation.ipynb` - Interactive exploration with visualizations
+- **Phase 2 Notebook:** `Phase2_Data_Preparation.ipynb` - Interactive data preparation with visualizations
+- **Phase 4 Notebook:** `Phase4_Implementation_Experimentation/Phase4_Model_Training.ipynb` - Model training and evaluation
 - **Model Justification:** Phase 3 model selection and justification (see Phase 3 section above)
 
 ## Requirements
@@ -259,9 +404,9 @@ See `requirements.txt` for complete list. Main dependencies:
 
 ## Next Steps
 
-Phase 2 and Phase 3 are complete. The data is prepared and the model is selected. Ready for:
-- **Phase 4:** Model Evaluation and Validation
-- **Phase 5:** Model Deployment and Monitoring
+Phase 2, 3, and 4 are complete. The data is prepared, models are trained and evaluated. Ready for:
+- **Phase 5:** Model Deployment and Monitoring (if applicable)
+- Final report and presentation preparation
 
 ## Repository
 
