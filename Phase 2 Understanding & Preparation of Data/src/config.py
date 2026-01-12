@@ -10,6 +10,7 @@ ARTIFACTS_DIR = "artifacts"
 MODELS_DIR = "artifacts/models"
 RESULTS_DIR = "artifacts/results"
 VISUALIZATIONS_DIR = "artifacts/visualizations"
+PIPELINE_DIR = "artifacts/pipeline"
 
 # Dataset configuration
 DATASET_NAME = "polish_companies_bankruptcy"
@@ -65,4 +66,11 @@ HYPERPARAMETER_GRIDS = {
         'max_depth': [3, 5]
     }
 }
+
+# API Configuration
+API_HOST = "0.0.0.0"
+API_PORT = 8000
+API_TITLE = "Financial Risk Classification API"
+API_DESCRIPTION = "API for predicting financial risk levels of small businesses"
+API_VERSION = "1.0.0"
 
