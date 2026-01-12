@@ -457,6 +457,175 @@ The Random Forest model was validated through comprehensive analysis:
 - **Interpretability**: Clear feature importance rankings for financial analysts
 - **Practical Utility**: Robust generalization suitable for production deployment in financial risk assessment
 
+## Phase 6: Deployment Considerations
+
+### (a) Is the model in production (deployed)?
+
+Yes, the model is fully deployed and production-ready through a REST API. The deployment includes:
+
+- **Complete ML Pipeline**: Encapsulated preprocessing (imputation, scaling) + trained Random Forest model
+- **REST API**: FastAPI-based API accessible at `http://localhost:8000` (configurable)
+- **Web Interface**: Interactive dashboard for testing, predictions, and monitoring
+- **Production-Ready Architecture**: The API can handle real-time prediction requests with proper error handling and validation
+
+**Deployment Status:**
+- ✅ Model trained and serialized
+- ✅ Pipeline integrated and tested
+- ✅ API deployed and accessible
+- ✅ Monitoring system active
+- ✅ Web interface functional
+
+The model can be deployed to production servers (cloud platforms like AWS, Azure, GCP, or on-premise) by running the API server. For academic purposes, it runs locally but follows production deployment patterns and best practices.
+
+### (b) What framework is used for deployment?
+
+**Primary Framework: FastAPI with Uvicorn**
+
+The deployment stack consists of:
+
+- **FastAPI**: Modern, high-performance web framework for building APIs with automatic OpenAPI/Swagger documentation
+- **Uvicorn**: ASGI (Asynchronous Server Gateway Interface) server for running the FastAPI application
+- **sklearn Pipeline**: Ensures consistent preprocessing and model inference in production
+- **Pydantic**: Data validation and settings management for request/response models
+
+**Deployment Architecture:**
+```
+Client Request 
+    ↓
+FastAPI Application (Uvicorn)
+    ↓
+Request Validation (Pydantic)
+    ↓
+ML Pipeline (Imputation → Scaling → Random Forest)
+    ↓
+Prediction Response + Monitoring Logging
+```
+
+**Key Deployment Features:**
+- Automatic API documentation (Swagger UI at `/docs`, ReDoc at `/redoc`)
+- Request validation using Pydantic models with type checking
+- Comprehensive error handling with appropriate HTTP status codes
+- Health check endpoint (`/health`) for monitoring and orchestration
+- Support for both JSON API requests and interactive web interface
+- Middleware for performance monitoring and request tracking
+
+**Deployment Methods:**
+
+**1. Direct Python Execution:**
+```bash
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Start API server
+uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**2. Docker Deployment (Recommended for Production):**
+```bash
+# Build Docker image
+docker build -t financial-risk-api .
+
+# Run container
+docker run -p 8000:8000 financial-risk-api
+```
+
+**3. Cloud Deployment Options:**
+- **AWS**: Deploy on EC2, ECS, or Lambda (with containerization)
+- **Azure**: Azure Container Instances or App Service
+- **GCP**: Cloud Run or Compute Engine
+- **Heroku**: Direct deployment with Procfile
+- **Railway/Render**: Simple container-based deployment
+
+**Scalability Considerations:**
+- FastAPI supports async operations for concurrent request handling
+- Can be scaled horizontally using load balancers (nginx, HAProxy)
+- Container orchestration with Kubernetes for high availability
+- Stateless API design allows easy scaling across multiple instances
+
+### (c) How is the model monitored in production?
+
+A comprehensive monitoring system has been implemented to ensure model health, performance tracking, and early detection of issues:
+
+**1. Health Check Endpoint:**
+- `GET /health` - Verifies API status and pipeline availability
+- Returns pipeline load status, number of features, and system health
+- Can be integrated with monitoring systems (e.g., Kubernetes liveness/readiness probes, Prometheus)
+- Suitable for automated health checks and alerting
+
+**2. Error Handling and Logging:**
+- HTTP status codes (400 for validation errors, 500 for server errors)
+- Detailed error messages for debugging and troubleshooting
+- Exception logging to console with stack traces
+- Request/response logging for audit trails
+
+**3. Performance Monitoring:**
+
+**Endpoint:** `GET /metrics`
+
+Provides real-time performance metrics:
+- **Response Time Statistics**: Mean, minimum, maximum, and 95th percentile
+- **Throughput**: Requests per second and per minute
+- **Request Counts**: Total requests processed and endpoint-specific counts
+- **Error Metrics**: Total errors and error rate percentage
+- **System Metrics**: Uptime and system availability
+
+**4. Prediction History and Audit Trail:**
+
+**Endpoint:** `GET /predictions/history?limit=N`
+
+- All predictions logged to `artifacts/monitoring/predictions.jsonl` (JSON Lines format)
+- Includes timestamp, input features summary, prediction, confidence, and response time
+- Last 100 predictions kept in memory for quick access
+- Full history available via API endpoint for analysis and debugging
+- Enables traceability and compliance requirements
+
+**5. Data Drift Detection:**
+
+**Endpoints:** 
+- `GET /monitoring/drift` - Overall drift status
+- `POST /monitoring/drift/check` - Check drift for specific features
+
+**Capabilities:**
+- Compares incoming feature values with training data statistics (mean, std, min, max)
+- Detects features with values >3 standard deviations from training mean (configurable threshold)
+- Provides z-scores and drift indicators per feature
+- Helps identify when input data distribution changes significantly
+- Critical for maintaining model performance over time
+
+**6. Model Degradation Alerts:**
+
+**Endpoint:** `GET /monitoring/alerts`
+
+Monitors and alerts on:
+- **Low Confidence Alert**: Triggers when average prediction confidence <85% (configurable)
+- **Class Distribution Shift**: Alerts when predicted class distribution deviates >20% from expected training distribution
+- **High Error Rate**: Alerts when API error rate exceeds 5% (configurable)
+- **Alert Severity Levels**: Warning (yellow) and Critical (red) for prioritization
+
+**Monitoring Dashboard:**
+- Real-time web interface at `http://localhost:8000` (Monitoring Dashboard tab)
+- Auto-refresh capability (every 5 seconds, configurable)
+- Visual representation of metrics, alerts, and prediction history
+- User-friendly interface for non-technical stakeholders
+
+**Future Monitoring Enhancements (Not yet implemented):**
+- Integration with external monitoring tools (Prometheus, Grafana, Datadog)
+- Automated alerting via email/Slack/webhooks
+- Model performance tracking over time (accuracy, precision, recall on live data if ground truth available)
+- Advanced drift detection using statistical tests (KS test, PSI)
+- Prediction latency percentiles and SLA monitoring
+- Resource utilization monitoring (CPU, memory, disk)
+
+**Monitoring Best Practices Implemented:**
+- ✅ Centralized logging and metrics collection
+- ✅ Real-time performance tracking
+- ✅ Proactive alerting on anomalies
+- ✅ Audit trail for compliance
+- ✅ Health checks for orchestration systems
+- ✅ User-friendly monitoring dashboard
+
+The monitoring system provides comprehensive production monitoring capabilities suitable for real-world deployment, ensuring model reliability, performance, and early detection of issues.
+
 ## Configuration
 
 Key settings can be modified in `src/config.py`:
@@ -547,6 +716,13 @@ The API will be available at `http://localhost:8000`
 - `GET /features` - List required features
 - `POST /predict` - Predict risk level
 - `GET /docs` - Interactive API documentation (Swagger UI)
+
+**Monitoring Endpoints:**
+- `GET /metrics` - Performance metrics (response time, throughput, error rate)
+- `GET /predictions/history` - Prediction history (last N predictions)
+- `GET /monitoring/drift` - Data drift detection status
+- `POST /monitoring/drift/check` - Check drift for specific features
+- `GET /monitoring/alerts` - Model degradation alerts
 
 **Web Interface:**
 Access the web interface at `http://localhost:8000` to:
