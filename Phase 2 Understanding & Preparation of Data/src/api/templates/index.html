@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Risk Classification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .feature-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        input[type="number"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn-predict {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-predict:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-reset {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-reset:hover {
+            background: #d0d0d0;
+        }
+        
+        .btn-load-sample {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-load-sample:hover {
+            background: #45a049;
+        }
+        
+        .btn-load-file {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-load-file:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .result-section.show {
+            display: block;
+        }
+        
+        .result-low {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .result-medium {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .result-high {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .result-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .probabilities {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .prob-item {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 5px;
+        }
+        
+        .prob-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .prob-value {
+            font-size: 1.2em;
+            color: #333;
+        }
+        
+        .confidence {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 Financial Risk Classification</h1>
+        <p class="subtitle">Predict financial risk level for small businesses</p>
+        
+        <div class="info-box">
+            <strong>Instructions:</strong> Enter financial ratios for a company. 
+            You can: (1) Load from a CSV/JSON file, (2) Click "Load Sample Data" for example values, or (3) Enter values manually.
+            Then click "Predict Risk" to get the classification.
+        </div>
+        
+        <div class="form-section">
+            <div class="button-group">
+                <div class="file-input-wrapper">
+                    <button class="btn-load-file" onclick="document.getElementById('fileInput').click()">
+                        📁 Load from File
+                    </button>
+                    <input type="file" id="fileInput" accept=".csv,.json" onchange="loadFromFile(event)">
+                </div>
+                <button class="btn-load-sample" onclick="loadSampleData()">Load Sample Data</button>
+                <button class="btn-reset" onclick="resetForm()">Reset Form</button>
+            </div>
+            
+            <div class="success-message" id="successMessage"></div>
+            
+            <div id="features-container" class="features-grid">
+                <!-- Features will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-predict" onclick="predictRisk()">Predict Risk</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <p>Processing prediction...</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="result-section" id="result">
+            <div class="result-title" id="result-title"></div>
+            <div class="probabilities" id="probabilities"></div>
+            <div class="confidence" id="confidence"></div>
+        </div>
+    </div>
+
+    <script>
+        let features = [];
+        
+        // Load features from API
+        async function loadFeatures() {
+            try {
+                const response = await fetch('/features');
+                const data = await response.json();
+                features = data.features;
+                renderFeatures();
+            } catch (error) {
+                showError('Failed to load features: ' + error.message);
+            }
+        }
+        
+        // Render feature inputs
+        function renderFeatures() {
+            const container = document.getElementById('features-container');
+            container.innerHTML = '';
+            
+            features.forEach(feature => {
+                const group = document.createElement('div');
+                group.className = 'feature-group';
+                
+                const label = document.createElement('label');
+                label.textContent = feature;
+                label.setAttribute('for', feature);
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = feature;
+                input.name = feature;
+                input.step = 'any';
+                input.placeholder = '0.0';
+                
+                group.appendChild(label);
+                group.appendChild(input);
+                container.appendChild(group);
+            });
+        }
+        
+        // Load sample data
+        async function loadSampleData() {
+            try {
+                // Get a sample from test data (we'll use average values as example)
+                const sampleValues = {
+                    'Attr1': 0.0, 'Attr2': 0.0, 'Attr3': 0.0, 'Attr4': -0.2, 'Attr5': 0.1,
+                    'Attr6': 0.0, 'Attr8': -0.2, 'Attr9': 0.0, 'Attr12': -0.1, 'Attr13': 0.0,
+                    'Attr15': 0.0, 'Attr16': 0.0, 'Attr19': 0.0, 'Attr20': -0.4, 'Attr21': 0.2,
+                    'Attr22': 0.0, 'Attr24': 0.0, 'Attr25': 0.0, 'Attr27': 0.0, 'Attr28': -0.2,
+                    'Attr29': 0.0, 'Attr30': 0.7, 'Attr32': -0.4, 'Attr33': 0.2, 'Attr34': 0.2,
+                    'Attr35': -0.3, 'Attr36': -0.2, 'Attr37': -0.2, 'Attr38': 0.3, 'Attr39': -0.1,
+                    'Attr40': -0.3, 'Attr41': -0.1, 'Attr42': 0.0, 'Attr43': -0.4, 'Attr44': -0.2,
+                    'Attr45': -0.1, 'Attr46': -0.2, 'Attr47': -0.4, 'Attr48': 0.0, 'Attr49': 0.0,
+                    'Attr50': -0.3, 'Attr52': -0.4, 'Attr55': 0.3, 'Attr56': -0.2, 'Attr57': -0.1,
+                    'Attr58': 0.2, 'Attr59': 0.0, 'Attr60': -0.1, 'Attr61': -0.1, 'Attr62': -0.4,
+                    'Attr63': 0.1, 'Attr64': -0.2, '_risk_score': -0.2
+                };
+                
+                features.forEach(feature => {
+                    const input = document.getElementById(feature);
+                    if (input && sampleValues[feature] !== undefined) {
+                        input.value = sampleValues[feature];
+                    }
+                });
+            } catch (error) {
+                showError('Failed to load sample data: ' + error.message);
+            }
+        }
+        
+        // Load data from file
+        function loadFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    let data = {};
+                    
+                    // Check file extension
+                    if (file.name.endsWith('.json')) {
+                        // Parse JSON
+                        data = JSON.parse(content);
+                        
+                        // If it's an object with a 'features' key, extract it
+                        if (data.features) {
+                            data = data.features;
+                        }
+                        // If it's an array, take first element
+                        else if (Array.isArray(data) && data.length > 0) {
+                            data = data[0];
+                        }
+                    } else if (file.name.endsWith('.csv')) {
+                        // Parse CSV
+                        const lines = content.split('\n').filter(line => line.trim() !== '');
+                        if (lines.length < 2) {
+                            showError('CSV file must contain at least a header row and one data row');
+                            event.target.value = '';
+                            return;
+                        }
+                        
+                        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').replace(/'/g, ''));
+                        const values = lines[1].split(',').map(v => v.trim().replace(/"/g, '').replace(/'/g, ''));
+                        
+                        headers.forEach((header, index) => {
+                            if (values[index] !== undefined && values[index] !== '') {
+                                const value = parseFloat(values[index]);
+                                if (!isNaN(value)) {
+                                    data[header] = value;
+                                }
+                            }
+                        });
+                    } else {
+                        showError('Unsupported file format. Please use CSV or JSON.');
+                        event.target.value = '';
+                        return;
+                    }
+                    
+                    // Fill form with loaded data
+                    let filledCount = 0;
+                    let missingFeatures = [];
+                    
+                    features.forEach(feature => {
+                        const input = document.getElementById(feature);
+                        if (input) {
+                            if (data[feature] !== undefined && data[feature] !== null && data[feature] !== '') {
+                                input.value = data[feature];
+                                filledCount++;
+                            } else {
+                                missingFeatures.push(feature);
+                            }
+                        }
+                    });
+                    
+                    // Show success/error message
+                    hideError();
+                    if (filledCount > 0) {
+                        const message = `✓ Loaded ${filledCount} features from file "${file.name}".`;
+                        if (missingFeatures.length > 0) {
+                            showSuccess(message + ` Missing ${missingFeatures.length} features. Please fill them manually.`);
+                        } else {
+                            showSuccess(message + ' All features loaded successfully!');
+                        }
+                    } else {
+                        showError('No matching features found in file. Please check the file format. Expected feature names: ' + features.slice(0, 5).join(', ') + '...');
+                    }
+                    
+                    // Reset file input
+                    event.target.value = '';
+                    
+                } catch (error) {
+                    showError('Error reading file: ' + error.message);
+                    event.target.value = '';
+                }
+            };
+            
+            reader.onerror = function() {
+                showError('Error reading file. Please try again.');
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // Reset form
+        function resetForm() {
+            features.forEach(feature => {
+                const input = document.getElementById(feature);
+                if (input) input.value = '';
+            });
+            hideResult();
+            hideError();
+            hideSuccess();
+            // Reset file input
+            document.getElementById('fileInput').value = '';
+        }
+        
+        // Predict risk
+        async function predictRisk() {
+            hideError();
+            hideResult();
+            
+            // Collect feature values
+            const featureData = {};
+            let allFilled = true;
+            
+            features.forEach(feature => {
+                const input = document.getElementById(feature);
+                const value = input.value.trim();
+                if (value === '') {
+                    allFilled = false;
+                } else {
+                    featureData[feature] = parseFloat(value);
+                }
+            });
+            
+            if (!allFilled) {
+                showError('Please fill in all features or use "Load Sample Data"');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ features: featureData })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Prediction failed');
+                }
+                
+                const result = await response.json();
+                showResult(result);
+            } catch (error) {
+                showError('Prediction error: ' + error.message);
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+        
+        // Show result
+        function showResult(result) {
+            const resultDiv = document.getElementById('result');
+            const titleDiv = document.getElementById('result-title');
+            const probDiv = document.getElementById('probabilities');
+            const confDiv = document.getElementById('confidence');
+            
+            // Set result class based on risk level
+            resultDiv.className = 'result-section show result-' + result.risk_level.toLowerCase();
+            
+            // Set title
+            titleDiv.textContent = `Predicted Risk Level: ${result.risk_level}`;
+            
+            // Set probabilities
+            probDiv.innerHTML = '';
+            Object.entries(result.probabilities).forEach(([level, prob]) => {
+                const item = document.createElement('div');
+                item.className = 'prob-item';
+                item.innerHTML = `
+                    <div class="prob-label">${level} Risk</div>
+                    <div class="prob-value">${(prob * 100).toFixed(2)}%</div>
+                `;
+                probDiv.appendChild(item);
+            });
+            
+            // Set confidence
+            confDiv.textContent = `Confidence: ${(result.confidence * 100).toFixed(2)}%`;
+            
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Hide result
+        function hideResult() {
+            document.getElementById('result').classList.remove('show');
+        }
+        
+        // Show error
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+        
+        // Hide error
+        function hideError() {
+            document.getElementById('error').classList.remove('show');
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.add('show');
+            setTimeout(() => hideSuccess(), 5000);
+        }
+        
+        // Hide success message
+        function hideSuccess() {
+            document.getElementById('successMessage').classList.remove('show');
+        }
+        
+        // Initialize on page load
+        window.onload = function() {
+            loadFeatures();
+        };
+    </script>
+</body>
+</html>
+
