@@ -497,7 +497,86 @@ All phases (1-5) are complete. The project includes:
 
 **Project is ready for:**
 - Final report and presentation preparation
-- Model deployment
+- Model deployment via API
+
+## ML Pipeline and API
+
+### Pipeline Implementation
+
+The project uses a complete sklearn Pipeline that integrates preprocessing and model training:
+
+- **SimpleImputer**: Handles missing values (median strategy)
+- **StandardScaler**: Normalizes features
+- **RandomForestClassifier**: Final model for prediction
+
+This ensures consistent preprocessing between training and production use.
+
+### Training the Pipeline
+
+To train the complete pipeline:
+
+```bash
+python -m src.pipeline.train_pipeline
+```
+
+This will:
+1. Load training data
+2. Create and train the complete pipeline
+3. Validate on test set
+4. Save pipeline to `artifacts/pipeline/full_pipeline.joblib`
+
+### API for Production Use
+
+The project includes a FastAPI-based REST API for using the model in production.
+
+**Start the API:**
+```bash
+uvicorn src.api.app:app --reload
+```
+
+Or:
+```bash
+python -m src.api.app
+```
+
+The API will be available at `http://localhost:8000`
+
+**Available Endpoints:**
+- `GET /` - Web interface for testing
+- `GET /health` - Health check
+- `GET /features` - List required features
+- `POST /predict` - Predict risk level
+- `GET /docs` - Interactive API documentation (Swagger UI)
+
+**Web Interface:**
+Access the web interface at `http://localhost:8000` to:
+- Enter financial features
+- Load sample data
+- Get predictions with probabilities
+- View results visually
+
+**API Usage Example:**
+```python
+import requests
+
+response = requests.post(
+    "http://localhost:8000/predict",
+    json={
+        "features": {
+            "Attr1": 0.0,
+            "Attr2": 0.0,
+            # ... all 53 features
+            "_risk_score": -0.2
+        }
+    }
+)
+
+result = response.json()
+print(f"Risk Level: {result['risk_level']}")
+print(f"Confidence: {result['confidence']:.2%}")
+```
+
+For detailed API documentation, see `docs/API_USAGE.md`.
 
 ## Repository
 
