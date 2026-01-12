@@ -74,3 +74,10 @@ API_TITLE = "Financial Risk Classification API"
 API_DESCRIPTION = "API for predicting financial risk levels of small businesses"
 API_VERSION = "1.0.0"
 
+# Monitoring Configuration
+MONITORING_DIR = "artifacts/monitoring"
+PREDICTION_HISTORY_LIMIT = 100  # Number of predictions to keep in memory
+DRIFT_DETECTION_THRESHOLD = 3.0  # Z-score threshold for drift detection (standard deviations)
+LOW_CONFIDENCE_THRESHOLD = 0.85  # Alert if average confidence below this
+HIGH_ERROR_RATE_THRESHOLD = 0.05  # Alert if error rate above this (5%)
+
