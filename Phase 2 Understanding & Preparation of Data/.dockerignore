@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Project specific
+data/raw/
+data/processed/
+data/splits/
+artifacts/models/
+artifacts/results/
+artifacts/visualizations/
+artifacts/monitoring/
+*.ipynb
+*.ipynb_checkpoints
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+reports/
+docs/
+*.md
+*.tex
+*.pdf
+
+# Tests
+tests/
+*.test
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
