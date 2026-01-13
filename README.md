@@ -162,22 +162,33 @@ The notebook will guide you through:
 .
 ├── src/                           # Source code
 │   ├── config.py                  # Configuration constants
-│   └── data/                      # Data processing modules
-│       ├── load_data.py           # Data loading and risk categorization
-│       ├── clean_data.py          # Missing values, duplicates, outliers
-│       └── prepare_features.py    # Feature selection and scaling
+│   ├── data/                      # Data processing modules
+│   │   ├── load_data.py           # Data loading and risk categorization
+│   │   ├── clean_data.py          # Missing values, duplicates, outliers
+│   │   └── prepare_features.py    # Feature selection and scaling
+│   ├── models/                    # Model training and evaluation
+│   ├── pipeline/                  # ML pipeline implementation
+│   └── api/                       # FastAPI application
 ├── data/
 │   ├── raw/                       # Raw dataset files
 │   ├── processed/                 # Cleaned dataset
 │   └── splits/                    # Train/test splits
 ├── artifacts/                     # Preprocessing artifacts and model outputs
 │   ├── models/                    # Trained models
+│   ├── pipeline/                 # Saved pipelines
 │   ├── results/                   # Evaluation results
-│   └── visualizations/            # Comparison visualizations
+│   ├── visualizations/            # Comparison visualizations
+│   └── monitoring/                # Monitoring data
 ├── reports/                       # Academic reports
+├── tests/                         # Test data files
 ├── Phase2_Data_Preparation.ipynb  # Phase 2 data preparation notebook
 ├── Phase4_Implementation_Experimentation/
 │   └── Phase4_Model_Training.ipynb # Phase 4 model training notebook
+├── Dockerfile                     # Docker container configuration
+├── docker-compose.yml             # Docker Compose configuration
+├── .dockerignore                  # Files excluded from Docker build
+├── docker-build.sh                # Build script (Unix/Mac)
+├── docker-build.bat               # Build script (Windows)
 ├── requirements.txt               # Python dependencies
 └── README.md                      # This file
 ```
@@ -473,6 +484,7 @@ Yes, the model is fully deployed and production-ready through a REST API. The de
 - ✅ Model trained and serialized
 - ✅ Pipeline integrated and tested
 - ✅ API deployed and accessible
+- ✅ Docker containerization implemented
 - ✅ Monitoring system active
 - ✅ Web interface functional
 
@@ -488,10 +500,13 @@ The deployment stack consists of:
 - **Uvicorn**: ASGI (Asynchronous Server Gateway Interface) server for running the FastAPI application
 - **sklearn Pipeline**: Ensures consistent preprocessing and model inference in production
 - **Pydantic**: Data validation and settings management for request/response models
+- **Docker**: Containerization platform for consistent deployment across environments
 
 **Deployment Architecture:**
 ```
 Client Request 
+    ↓
+Docker Container (Port 8000)
     ↓
 FastAPI Application (Uvicorn)
     ↓
@@ -522,13 +537,50 @@ uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 **2. Docker Deployment (Recommended for Production):**
+
+The application is fully containerized using Docker, ensuring consistent behavior across different environments.
+
+**Build and Run:**
 ```bash
 # Build Docker image
 docker build -t financial-risk-api .
 
 # Run container
-docker run -p 8000:8000 financial-risk-api
+docker run -d --name financial-risk-api -p 8000:8000 financial-risk-api
 ```
+
+**Using Docker Compose (Recommended):**
+```bash
+# Start container with docker-compose
+docker-compose up -d
+
+# View logs
+docker logs financial-risk-api
+
+# Stop container
+docker-compose down
+```
+
+**Docker Benefits:**
+- **Consistency**: Same environment across development, testing, and production
+- **Isolation**: Application runs in isolated container, avoiding dependency conflicts
+- **Portability**: Easy deployment to any Docker-compatible platform (AWS, Azure, GCP, Kubernetes)
+- **Scalability**: Can easily scale by running multiple container instances
+- **Reproducibility**: Exact same environment can be recreated from Dockerfile
+
+**Docker Image Contents:**
+- Complete source code (`src/` directory)
+- Trained ML pipeline (`artifacts/pipeline/`)
+- Web interface templates
+- All Python dependencies
+- Runtime monitoring directory
+
+**Docker Configuration:**
+- Base image: Python 3.11-slim (lightweight, secure)
+- Working directory: `/code`
+- Exposed port: 8000
+- Health checks configured for orchestration systems
+- Volume mounting for persistent monitoring data
 
 **3. Cloud Deployment Options:**
 - **AWS**: Deploy on EC2, ECS, or Lambda (with containerization)
@@ -699,14 +751,23 @@ This will:
 
 The project includes a FastAPI-based REST API for using the model in production.
 
-**Start the API:**
+**Start the API (Direct Python):**
 ```bash
-uvicorn src.api.app:app --reload
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Start API server
+uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Or:
+**Start the API (Docker - Recommended):**
 ```bash
-python -m src.api.app
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Or manually
+docker build -t financial-risk-api .
+docker run -d --name financial-risk-api -p 8000:8000 financial-risk-api
 ```
 
 The API will be available at `http://localhost:8000`
@@ -906,10 +967,11 @@ Yes, several areas for continuous improvement and optimization are planned for f
 - **Interactive Explanations**: Develop a more sophisticated UI for exploring model explanations.
 
 **3. Production Readiness & Scalability (High Priority):**
-- **Containerization (Docker)**: Finalize Dockerization for consistent deployment across different environments.
-- **Cloud Deployment**: Deploy to a cloud platform (AWS, Azure, GCP) using services like AWS Lambda, Azure Functions, or Google Cloud Run for serverless scalability.
-- **Batch Prediction**: Add an endpoint for processing large batches of data asynchronously.
-- **Authentication & Authorization**: Implement API key management or OAuth for secure access.
+- ✅ **Containerization (Docker)**: Fully implemented and production-ready
+- **Cloud Deployment**: Deploy Docker container to cloud platforms (AWS ECS, Azure Container Instances, GCP Cloud Run) for serverless scalability
+- **Kubernetes Orchestration**: Implement Kubernetes for high-availability deployments
+- **Batch Prediction**: Add an endpoint for processing large batches of data asynchronously
+- **Authentication & Authorization**: Implement API key management or OAuth for secure access
 
 **4. Advanced Monitoring (High Priority):**
 - **External Monitoring Integration**: Connect with tools like Prometheus/Grafana or Datadog for centralized monitoring and alerting.
